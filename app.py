@@ -75,13 +75,23 @@ def forge():
     click.echo("Done")
 
 
+@app.context_processor
+def inject_user():
+    user = db.session.scalar(select(User))
+    return dict(user=user)
+
+
 @app.route("/")
 @app.route("/home")
 @app.route("/index")
-def hello():
-    user = db.session.scalar(select(User))
+def index():
     movies = db.session.scalars(select(Movie)).all()
-    return render_template("index.html", user=user, movies=movies)
+    return render_template("index.html", movies=movies)
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template("404.html"), 404
 
 
 @app.route("/user/<name>")
@@ -91,7 +101,7 @@ def user_page(name):
 
 @app.route("/test")
 def test_url_for():
-    print(url_for("hello"))
+    print(url_for("index"))
     print(url_for("user_page", name="greyli"))
     print(url_for("test_url_for"))
     print(url_for("test_url_for", num=2))
